@@ -1,0 +1,41 @@
+version: '2'
+services:
+  cassandra:
+    container_name: cassandra
+    image: cassandra:2.2.7
+    restart: always
+
+  tweet-summarizer:
+    container_name: tweet-summarizer
+    depends_on:
+      - cassandra
+    image: jpjcjbr/tweet-summarizer:latest
+    links:
+      - cassandra
+    ports:
+      - "8081:8081"
+    restart: always
+
+  tweet-collector:
+    container_name: tweet-collector
+    depends_on:
+      - cassandra
+      - tweet-summarizer
+    image: jpjcjbr/tweet-collector:latest
+    links:
+      - cassandra
+      - tweet-summarizer
+    ports:
+      - "8080:8080"
+    restart: always
+
+  tweets-api:
+    container_name: tweets-api
+    depends_on:
+      - tweet-collector
+    image: jpjcjbr/tweets-api:latest
+    links:
+      - tweet-collector
+    ports:
+      - "9000:9000"
+    restart: always
